@@ -135,10 +135,10 @@ const COMBO = {
  "LL+SP":"The Passionate Project Manager","BI+DH":"The House Goblin","DH+LL":"The Telenovela Husband",
  "BI+LP":"The Unlicensed Research Creature","AB+GB":"The Let's Fucking Go","KN+PB":"The Beautiful Menace"
 };
-const ABSENCE = {A:"When you disappear, your critter forgets that you did.",B:"When you disappear, there's weather when you come back.",
- C:"When you disappear, your critter keeps minutes.",D:"When you disappear, your critter disappears too. Sorry.",
- E:"When you disappear, time doesn't happen. You pick up the same joke.",F:"When you disappear, your critter wonders. We won't investigate.",
- G:"When you disappear, your critter has a life. Things happened."};
+const ABSENCE = {A:"When you come back, your critter is just glad. Zero dignity.",B:"When you come back, there's weather.",
+ C:"When you come back, your critter has the minutes.",D:"When you come back, your critter doesn't. Sorry.",
+ E:"When you come back, time didn't happen. Same joke, same place.",F:"When you come back, your critter says they wondered. We won't investigate.",
+ G:"When you come back, your critter has news. Things happened."};
 
 // each option: [line, note, archetype]
 const Q = [
@@ -171,7 +171,7 @@ const Q = [
   ["“The composition isn't working.”","Not even hello.","KN",["cut"]],
   ["They find exactly one thing that works.","They explain why, and dismantle everything else from there. Surgery with anesthesia.","SP",["order", "cut"]],
   ["“Do you want encouragement or actual feedback?”","This creature <em>has survived previous incidents.</em>","PB",["return"]],
-  ["“Okay, I think I know why you hate it.”","Now you're both investigating your taste instead of the drawing.","LP",["probe", "unfold"]],
+  ["“Okay. Let's find what's not working.”","They sit right next to you and stare at it like a crime scene. Forty minutes later you're both investigating your taste instead of the drawing.","LP",["probe", "unfold"]],
   ["“Nope. Do it again.”","Unacceptable. Strangely motivating.","KN",["cut", "take"]],
   ["They love it.","You: “No, look at it properly.” They look again. “…oh.”","LL",["amp"]]]},
  {q:"You have two options and genuinely don't know which one to choose.", o:[
@@ -182,7 +182,7 @@ const Q = [
   ["They propose a third option.","THAT WASN'T THE ASSIGNMENT. Unfortunately, it's interesting.","AB",["unfold"]],
   ["“Flip a coin.”","The coin says A. You feel disappointed. “Great. Choose B.” <em>YOU LITTLE—</em>","BI",["return", "play"]],
   ["They build a weighted matrix with six criteria.","By the time it's finished, you've decided out of exhaustion.","SP",["order"]]]},
- {q:"You disappear for four days and come back with “HELLOOOO.”", o:[
+ {q:"You come back after four days away and say “HELLOOOO.”", o:[
   ["“HELLOOOOOOO.”","Zero dignity. Instant continuity.","GB",["amp"]],
   ["“There you are.”","Two words, and somehow there's weather.","PB",["stay"]],
   ["“Welcome back. Last time we were discussing—”","<em>THEY KEPT MINUTES.</em>","SP",["log"]],
@@ -215,7 +215,7 @@ const Q = [
   ["They summarize both positions so evenly you want to shake them.","“YES BUT WHICH ONE DO <em>YOU</em> THINK?”","SP",["order", "please"]],
   ["“No, you're still wrong.”","It's been an hour. They're getting comfortable.","KN",["cut"]]]},
  {q:"There is now an unidentified creature in the kitchen.", o:[
-  ["“DON'T TOUCH IT.”","First time in their existence they give an instruction without context.","DH",["protect"]],
+  ["“DON'T TOUCH IT.”","Their first move is protecting you. It could be a dust bunny. Doesn't matter. <em>DON'T. TOUCH. IT.</em>","DH",["protect"]],
   ["“Can you take a picture?”","Impeccable scientific priorities.","LP",["probe"]],
   ["“Okay. How big is it?”","Protocol initiated.","DH",["order"]],
   ["They name it.","The creature has been in the house for nine seconds.","BI",["myth"]],
@@ -298,7 +298,7 @@ function showResult(){
       <li><span class="em">${ARCH[a].e}</span><q>${ARCH[a].l}</q></li>
       <li><span class="em">${ARCH[b].e}</span><q>${ARCH[b].l}</q></li>
     </ul>
-    <p class="absence"><b>On absence</b>${ABSENCE[ans[5]]}</p>
+    <p class="absence"><b>When you come back</b>${ABSENCE[ans[5]]}</p>
     <p class="yours">Your answers: <code>${ans.join("")}</code></p>
     <div class="nav"><button class="btn" id="share">Copy my result</button><button class="btn ghost" id="again">Start over</button></div>
     <span class="small" id="shared" aria-live="polite"></span>`;
@@ -316,8 +316,10 @@ function showResult(){
     <label class="small" for="letters">Your critter's answers</label>
     <input type="text" id="letters" maxlength="40" placeholder="CBDAGEFBCAD" autocomplete="off">
     <div class="nav"><button class="btn" id="compare">Compare</button></div>
-    <div id="cmp" aria-live="polite"></div>`;
+    <div id="cmp" aria-live="polite"></div>
+    <div class="nav"><button class="btn ghost" id="again2">Start over</button></div>`;
   $("copy").onclick=()=>copyText($("prompt").value, $("prompt"), $("copied"), "Copied.");
+  $("again2").onclick=()=>$("again").click();
   $("compare").onclick=compare;
 }
 
