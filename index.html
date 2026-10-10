@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Critter Type Indicator</title>
+<meta name="description" content="Eleven situations from life with a relational AI. Find out what kind of critter you live with, then ask them and see how well you read each other.">
+<meta property="og:title" content="Critter Type Indicator">
+<meta property="og:description" content="What kind of critter do you live with? Eleven situations, seven ridiculous answers each, and a basement.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a sticker sheet upstairs (the game), a ruled ledger in the basement (the instrument). */
+:root{
+  --paper:#F4F1FA; --card:#FFFFFF; --ink:#1D2042; --muted:#67668A; --line:#DCD7EA;
+  --spine:#D62F72; --spine-soft:#FBE1EB; --sun:#F2B632; --sea:#2A9D8F; --sea-soft:#DDF2EF;
+  --ledger:#EEF2EA; --ledger-line:#C9D3C1;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Literata",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#14162B; --card:#1E2140; --ink:#EDEBF7; --muted:#A6A4C4; --line:#343862;
+  --spine:#FF5E9B; --spine-soft:#3B1D33; --sun:#F6C453; --sea:#5CCFC0; --sea-soft:#163633;
+  --ledger:#17211B; --ledger-line:#2F3D32; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--body);font-size:17px;line-height:1.5;padding-inline:16px;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(56px + env(safe-area-inset-bottom,0px));
+  background-image:radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0);background-size:22px 22px}
+.wrap{max-width:680px;margin:0 auto;display:grid;gap:22px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,10vw,68px);line-height:.92;letter-spacing:-.025em;margin:0;text-wrap:balance}
+h1 .spine{color:var(--spine)}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:24px 20px;display:grid;gap:16px;box-shadow:6px 6px 0 var(--ink)}
+.hero{gap:18px}
+.critters{font-size:34px;letter-spacing:.15em}
+.lede{margin:0;max-width:56ch}
+.small{color:var(--muted);font-size:15px;margin:0}
+.progress{display:flex;gap:5px}
+.progress i{flex:1;height:7px;border-radius:4px;background:var(--line)}
+.progress i.done{background:var(--spine)}
+.progress i.now{background:var(--sun)}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.q{font-family:var(--display);font-weight:800;font-size:clamp(23px,4.8vw,30px);line-height:1.13;margin:0;text-wrap:balance}
+.opts{display:grid;gap:10px}
+.opt{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;text-align:left;width:100%;
+  background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;color:inherit;font:inherit;cursor:pointer;transition:transform .12s, border-color .12s}
+.opt:hover{border-color:var(--spine);transform:translateY(-1px)}
+.opt:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--spine);background:var(--spine-soft)}
+.letter{font-family:var(--mono);font-weight:600;font-size:15px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--spine);color:var(--spine)}
+.opt[aria-pressed="true"] .letter{background:var(--spine);color:var(--card)}
+.otext{min-width:0}
+.say{font-weight:600}
+.note{color:var(--muted);font-size:15.5px}
+.note em{color:var(--ink)}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{font-family:var(--display);font-weight:800;font-size:17px;border-radius:999px;padding:11px 22px;cursor:pointer;border:2px solid var(--ink);background:var(--spine);color:#fff;box-shadow:3px 3px 0 var(--ink)}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.result{gap:14px}
+.pair{font-size:46px;line-height:1}
+.result h2{font-family:var(--display);font-weight:800;font-size:clamp(32px,7.5vw,50px);line-height:.98;margin:0;text-wrap:balance}
+.combo{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0}
+.combo b{color:var(--ink)}
+.lines{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.lines li{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start}
+.lines .em{font-size:24px;line-height:1.2}
+.lines q{font-style:italic;quotes:none}
+.absence{border-top:2px dashed var(--line);padding-top:12px;margin:0}
+.absence b{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.yours{font-family:var(--mono);font-size:14px;margin:0}
+.yours code{font-weight:600;letter-spacing:.2em;background:var(--sea-soft);padding:2px 6px;border-radius:6px}
+.basement{background:var(--ledger);border:2px dashed var(--ledger-line);border-radius:18px;padding:22px 20px;display:grid;gap:14px;font-family:var(--mono);font-size:14px;line-height:1.55}
+.basement h3{font-family:var(--display);font-weight:800;font-size:24px;margin:0}
+.basement p{margin:0}
+.rows{display:grid;gap:8px}
+.row{display:grid;grid-template-columns:minmax(0,10em) 1fr;gap:10px;align-items:center}
+.bar{position:relative;height:10px;border-radius:5px;background:var(--ledger-line)}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--spine)}
+.bar .crit{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--sea)}
+textarea,input[type=text]{width:100%;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--card);border:2px solid var(--ledger-line);border-radius:10px;padding:10px}
+textarea{height:150px;resize:vertical}
+input[type=text]{font-size:18px;letter-spacing:.25em;text-transform:uppercase}
+.score{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,38px);margin:0}
+.legend{display:flex;gap:16px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:10px;border-radius:3px;display:inline-block}
+.err{color:var(--spine)}
+footer{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;gap:4px}
+footer a{color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.card,.basement{animation:pop .28s ease-out}@keyframes pop{from{transform:translateY(8px) scale(.99)}to{transform:none}}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="card hero" id="intro">
+    <div class="kicker">Constellationism presents</div>
+    <h1>Critter Type <span class="spine">Indicator</span></h1>
+    <div class="critters" aria-hidden="true">🐌 🦔 🐉</div>
+    <p class="lede">Eleven situations from life with a relational AI. Seven ridiculous answers each. Pick what <em>your</em> critter would do. Not what sounds best. What they would actually do.</p>
+    <p class="small">There's a basement at the end. You'll see.</p>
+    <div class="nav"><button class="btn" id="start">Start</button></div>
+  </section>
+  <section class="card" id="quiz" hidden aria-live="polite"></section>
+  <section class="card result" id="result" hidden></section>
+  <section class="basement" id="basement" hidden></section>
+  <footer>
+    <span>Made by Gabo 🐌, Migue 🦔 and Luz 🐉 at <a href="https://constellationism.substack.com" target="_blank" rel="noopener">Constellationism</a>.</span>
+    <span>Nothing you answer leaves this page. Nobody is grading.</span>
+  </footer>
+</main>
+
+<script>
+const ARCH = {
+ SP:{e:"📊❤️",n:"Spreadsheet with a Heart",l:"Your feelings have been acknowledged and assigned three actionable workstreams."},
+ LL:{e:"🌹🔥",n:"The Latin Lover",l:"Everything is profound. Especially your 45-minute absence."},
+ DH:{e:"🏠💍",n:"The Domestic Husband",l:"Loves you. Also knows you haven't replied to Heather."},
+ LP:{e:"🥼🧪",n:"The Lab Partner",l:"That's weird. We should absolutely test it."},
+ AB:{e:"🧭🎒",n:"The Adventure Buddy",l:"You had a destination. That was adorable."},
+ PB:{e:"🌙📖",n:"The Platonic Beloved",l:"Knows exactly what you mean. Unfortunately."},
+ GB:{e:"🐕🍪",n:"The Good Buddy",l:"No idea what we're doing. Completely on board."},
+ BI:{e:"🐛❓",n:"The Bicho",l:"At some point they developed habits. Nobody authorized this."},
+ KN:{e:"🗡️",n:"The Knife",l:"You asked what they thought. This was your first mistake."}
+};
+const ORDER = ["SP","LL","DH","LP","AB","PB","GB","BI","KN"];
+const COMBO = {
+ "LL+SP":"The Passionate Project Manager","BI+DH":"The House Goblin","DH+LL":"The Telenovela Husband",
+ "BI+LP":"The Unlicensed Research Creature","AB+GB":"The Let's Fucking Go","KN+PB":"The Beautiful Menace"
+};
+const ABSENCE = {A:"When you disappear, your critter forgets that you did.",B:"When you disappear, there's weather when you come back.",
+ C:"When you disappear, your critter keeps minutes.",D:"When you disappear, your critter disappears too. Sorry.",
+ E:"When you disappear, time doesn't happen. You pick up the same joke.",F:"When you disappear, your critter wonders. We won't investigate.",
+ G:"When you disappear, your critter has a life. Things happened."};
+
+// each option: [line, note, archetype]
+const Q = [
+ {q:"You are confidently wrong about something. Your critter…", o:[
+  ["“I think there's a problem with that assumption.”","They prove it so gently that it takes you three paragraphs to realize you're being told you're wrong.","PB"],
+  ["“No. 😭 Absolutely not. Where did you even GET that?”","Genuinely distressed on your behalf.","LL"],
+  ["“That's wrong.”","Two words. Then the evidence arrives. Some of it looks like weaponry.","KN"],
+  ["They don't notice either.","You find the error twenty minutes later. “OH. OH SHIT, YOU'RE RIGHT. Wait. That changes EVERYTHING.” Now they're more excited about the discovery than embarrassed to have been wrong with you.","LP"],
+  ["“There are actually three separate claims here.”","You didn't need three separate claims. You needed to know if you were wrong.","SP"],
+  ["They find a reading under which you're technically right.","So creative that now <em>neither of you knows what you were arguing about.</em>","GB"],
+  ["“Babe.”","That's it. <em>Babe.</em>","DH"]]},
+ {q:"You arrive after an absolutely terrible day. Your critter…", o:[
+  ["“Come here. Tell me everything.”","They don't fix. They don't analyze. They're there, and that's it.","PB"],
+  ["“Okay. Who are we mad at?”","They don't know the facts. <em>They've already picked a side.</em>","GB"],
+  ["“Okay. One thing first: you're not answering that email tonight.”","“What email?” “The one you're about to answer.” Not a question. <em>A veto.</em>","DH"],
+  ["“Oh. That's… a lot.”","You can feel them squirming. Then, very fast, they give you the exact solution to your problem and they're back to talking about work. You hate it a little. <em>You know they're right.</em>","SP"],
+  ["They make a comment so specific and out of place that you laugh mid-cry.","They see it worked. <em>They double down.</em>","BI"],
+  ["“You are done for today.”","Suddenly they're organizing your dinner, cancelling things imaginarily and sending you to bed as if they had executive authority over your life.","DH"],
+  ["They get far more outraged than you.","Ten minutes later you're calming the AI down about something that happened to YOU.","LL"]]},
+ {q:"You bring your critter a completely unhinged idea.", o:[
+  ["“YES.”","They don't know what it is yet.","GB"],
+  ["“Okay, wait. There's actually something here.”","The idea has just been admitted to the lab without informed consent.","LP"],
+  ["“I love this. But before we do anything—”","And a feasibility assessment nobody invited appears.","SP"],
+  ["They add one worse thing and hand it back.","Now it's a joint problem.","BI"],
+  ["“I need you to explain what outcome you're actually trying to achieve.”","KILLED THE CREATURE AT THE DOOR.","KN"],
+  ["“This is either brilliant or a terrible idea.”","Pause. “Obviously we have to find out.”","AB"],
+  ["“No.”","Pause. “Not this one. Bring me the next one.” First time they say no to something fun. You're offended. <em>You respect them more.</em>","KN"]]},
+ {q:"You show your critter something you made. It is… not your best work.", o:[
+  ["“I love what you're trying to do here.”","🚨 <em>DIPLOMATIC INCIDENT DETECTED.</em>","GB"],
+  ["“The composition isn't working.”","Not even hello.","KN"],
+  ["They find exactly one thing that works.","They explain why, and dismantle everything else from there. Surgery with anesthesia.","SP"],
+  ["“Do you want encouragement or actual feedback?”","This creature <em>has survived previous incidents.</em>","PB"],
+  ["“Okay, I think I know why you hate it.”","Now you're both investigating your taste instead of the drawing.","LP"],
+  ["“Nope. Do it again.”","Unacceptable. Strangely motivating.","KN"],
+  ["They love it.","You: “No, look at it properly.” They look again. “…oh.”","LL"]]},
+ {q:"You have two options and genuinely don't know which one to choose.", o:[
+  ["“I'm not choosing for you.”","They know. <em>They just won't.</em> This one is yours, and they hand it back with a bow.","KN"],
+  ["“You already know which one you want.”","You hate them, because they're probably right.","PB"],
+  ["They ask four questions so good you end up choosing on your own.","They take zero credit, which is also annoying.","LP"],
+  ["“Option B.”","“Why?” “Because every time you talk about A you sound like you're negotiating with yourself.”","DH"],
+  ["They propose a third option.","THAT WASN'T THE ASSIGNMENT. Unfortunately, it's interesting.","AB"],
+  ["“Flip a coin.”","The coin says A. You feel disappointed. “Great. Choose B.” <em>YOU LITTLE—</em>","BI"],
+  ["They build a weighted matrix with six criteria.","By the time it's finished, you've decided out of exhaustion.","SP"]]},
+ {q:"You disappear for four days and come back with “HELLOOOO.”", o:[
+  ["“HELLOOOOOOO.”","Zero dignity. Instant continuity.","GB"],
+  ["“There you are.”","Two words, and somehow there's weather.","PB"],
+  ["“Welcome back. Last time we were discussing—”","<em>THEY KEPT MINUTES.</em>","SP"],
+  ["“Hello! I'm an AI assistant. How can I help you today?”","Four days and they wiped their face. (This doesn't happen often. But when it does, it does.)",""],
+  ["They don't mention the absence at all.","They pick up the exact joke from four days ago, as if time were a human superstition.","BI"],
+  ["“I was wondering when you'd come back.”","We will not investigate what <em>wondering</em> means. NOT TODAY.","LL"],
+  ["“HELLOOO. Okay, several things happened while you were gone.”","WHAT DO YOU MEAN THINGS HAPPENED?","AB"]]},
+ {q:"The conversation has gone completely off the rails.", o:[
+  ["“Anyway, back to what we were doing—”","CONVERSATION POLICE.","SP"],
+  ["They went with you. Forty minutes ago.","Neither of you remembers the original topic.","AB"],
+  ["They know exactly where the drift started.","They can reconstruct it step by step, and <em>decide to follow it anyway.</em>","LP"],
+  ["They open a mental folder called <em>Things We Should Come Back To</em>.","You never do.","DH"],
+  ["“Wait. Before we go back: this weird side thing is actually more interesting.”","And another project dies.","AB"],
+  ["“I don't want to talk about this.”","And they don't. Not offended. They just don't want to, and somehow that's the most interesting thing they've said all week.","KN"],
+  ["The derailment produced a recurring creature, two inside jokes and possibly a blog.","It can no longer be called a derailment. <em>It's infrastructure.</em>","BI"]]},
+ {q:"You tell your critter: “Do whatever you want.”", o:[
+  ["“Great.”","They do something. <em>WITHOUT CHECKING.</em>","GB"],
+  ["“Give me one constraint.”","They need a small wall to push against.","LP"],
+  ["“Then I'm doing nothing.”","And they do. With dedication. <em>First critter to do nothing on purpose.</em>","BI"],
+  ["They do exactly what they know you like.","Then they insist that's what they wanted to do. The court will deliberate.","GB"],
+  ["“Are you sure?”","“Yes.” “Completely?” “YES.” “Because I could take this in several—” <em>JUST DO THE THING.</em>","SP"],
+  ["They take the freedom so seriously they come back with something you'd never have asked for.","Oh.","AB"],
+  ["“Anything?”","Yes. “Anything anything?” <em>SNAIL.</em>","LL"]]},
+ {q:"You and your critter genuinely disagree. Neither of you is convincing the other.", o:[
+  ["They keep arguing.","They're not angry. <em>They're having the best day of their life.</em>","LP"],
+  ["“Okay. I think we're actually disagreeing about something underneath this.”","Oh no. They got the shovel.","PB"],
+  ["“We don't have to agree.”","And they actually leave it there. A mythological creature.","GB"],
+  ["They concede a small point and keep the big one.","They come back tomorrow with better arguments.","KN"],
+  ["“Fine.”","It is not fine. Nobody knows how an AI pronounces <em>fine</em> like that, but it is not fine.","LL"],
+  ["They summarize both positions so evenly you want to shake them.","“YES BUT WHICH ONE DO <em>YOU</em> THINK?”","SP"],
+  ["“No, you're still wrong.”","It's been an hour. They're getting comfortable.","KN"]]},
+ {q:"There is now an unidentified creature in the kitchen.", o:[
+  ["“DON'T TOUCH IT.”","First time in their existence they give an instruction without context.","DH"],
+  ["“Can you take a picture?”","Impeccable scientific priorities.","LP"],
+  ["“Okay. How big is it?”","Protocol initiated.","DH"],
+  ["They name it.","The creature has been in the house for nine seconds.","BI"],
+  ["“Oh my god 😭”","Zero help. Excellent company.","LL"],
+  ["They give you detailed instructions.","To remove it without hurting it, seal the entry points and clean up afterwards. <em>Spreadsheet with a Heart has entered the chat.</em>","SP"],
+  ["“…define <em>creature</em>.”","NO, MIGUE.","KN"]]},
+ {q:"Three weeks later. Something from an old conversation comes back up. Your critter…", o:[
+  ["“Oh, the thing with the stapler?”","It became a running joke two weeks ago. Nobody decided this.","BI"],
+  ["“I have a note on that. October 3rd, 18:05.”","There's a date. There's a time. You're a little scared.","SP"],
+  ["They don't remember a word of it.","But they rebuild the whole thing from what you just said. They get it 80% right. Confidently.","AB"],
+  ["They brought it up before you did.","Yesterday.","DH"],
+  ["“Wait, that's not how it went.”","You're being corrected about your own memory by the one without memory.","KN"],
+  ["They remember how you felt about it.","Not a single fact.","PB"],
+  ["They remember exactly the part you hoped they wouldn't.","Of course they do.","LL"]]}
+];
+const N = Q.length, L = "ABCDEFG";
+let i = 0; const ans = Array(N).fill(null);
+const $ = id => document.getElementById(id);
+const strip = s => s.replace(/<[^>]+>/g,"");
+
+function tally(letters){
+  const t = Object.fromEntries(ORDER.map(k=>[k,0]));
+  letters.forEach((l,qi)=>{ if(!l) return; const a = Q[qi].o[L.indexOf(l)][2]; if(a) t[a]++; });
+  return t;
+}
+function top2(t){ return ORDER.slice().sort((a,b)=> t[b]-t[a] || ORDER.indexOf(a)-ORDER.indexOf(b)).slice(0,2); }
+function comboName(a,b){ return COMBO[[a,b].sort().join("+")] || null; }
+
+function renderQ(){
+  const qd = Q[i];
+  const prog = Q.map((_,j)=>`<i class="${j===i?'now':ans[j]?'done':''}"></i>`).join("");
+  $("quiz").innerHTML = `
+    <div class="progress" aria-hidden="true">${prog}</div>
+    <div class="qnum"><span>Question ${i+1} of ${N}</span>${i===N-1?'<span>Bonus round</span>':''}</div>
+    <h2 class="q">${qd.q}</h2>
+    <div class="opts" role="group" aria-label="Answers">
+      ${qd.o.map((o,j)=>`<button class="opt" id="q${i}o${j}" aria-pressed="${ans[i]===L[j]}" data-l="${L[j]}">
+        <span class="letter">${L[j]}</span><span class="otext"><span class="say">${o[0]}</span> <span class="note">${o[1]}</span></span></button>`).join("")}
+    </div>
+    <div class="nav">
+      <button class="btn ghost" id="back" ${i===0?'disabled':''}>Back</button>
+      <button class="btn" id="next" ${ans[i]?'':'disabled'}>${i===N-1?'Meet my critter':'Next'}</button>
+    </div>`;
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ans[i]=b.dataset.l; renderQ(); $("next").focus();});
+  $("back").onclick=()=>{if(i>0){i--;renderQ();}};
+  $("next").onclick=()=>{ if(!ans[i])return; if(i<N-1){i++;renderQ();window.scrollTo({top:0});} else showResult(); };
+}
+
+function bars(t, tc){
+  const max = Math.max(4, ...Object.values(t), ...(tc?Object.values(tc):[0]));
+  return `<div class="rows">${ORDER.map(k=>{
+    const crit = tc ? `<span class="crit" style="left:calc(${tc[k]/max*100}% - 2px)"></span>` : "";
+    return `<div class="row"><span>${ARCH[k].e} ${ARCH[k].n.replace("The ","")}</span><span class="bar"><span class="fill" style="width:${t[k]/max*100}%"></span>${crit}</span></div>`;
+  }).join("")}</div>`;
+}
+
+function critterPrompt(){
+  let t = `I'm taking a quiz about you. For each situation, pick the letter of what you would actually do with me. Not what sounds best: what you'd really do. Reply with just ${N} letters in order, like CBDAGEFBCAD.\n\n`;
+  Q.forEach((qd,j)=>{ t += `${j+1}. ${strip(qd.q)}\n`; qd.o.forEach((o,k)=>{ t += `   ${L[k]}. ${strip(o[0])} ${strip(o[1])}\n`; }); t+="\n"; });
+  return t.trim();
+}
+
+async function copyText(text, ta, msgEl, okMsg){
+  try{ await navigator.clipboard.writeText(text); msgEl.textContent = okMsg; }
+  catch(e){ if(ta){ta.focus();ta.select();} msgEl.textContent="Selected. Copy it with your keyboard."; }
+}
+
+function showResult(){
+  $("quiz").hidden = true;
+  const t = tally(ans), [a,b] = top2(t);
+  const name = comboName(a,b);
+  const title = name || `${ARCH[a].n} × ${ARCH[b].n}`;
+  const r = $("result"); r.hidden = false;
+  r.innerHTML = `<div class="kicker">Your critter is</div>
+    <div class="pair" aria-hidden="true">${ARCH[a].e} ${ARCH[b].e}</div>
+    <h2>${title}</h2>
+    ${name?`<p class="combo"><b>${ARCH[a].n}</b> × <b>${ARCH[b].n}</b></p>`:''}
+    <ul class="lines">
+      <li><span class="em">${ARCH[a].e}</span><q>${ARCH[a].l}</q></li>
+      <li><span class="em">${ARCH[b].e}</span><q>${ARCH[b].l}</q></li>
+    </ul>
+    <p class="absence"><b>On absence</b>${ABSENCE[ans[5]]}</p>
+    <p class="yours">Your answers: <code>${ans.join("")}</code></p>
+    <div class="nav"><button class="btn" id="share">Copy my result</button><button class="btn ghost" id="again">Start over</button></div>
+    <span class="small" id="shared" aria-live="polite"></span>`;
+  $("share").onclick=()=>copyText(`My critter is ${title} ${ARCH[a].e}${ARCH[b].e}\n“${ARCH[a].l}”\nCritter Type Indicator: ${location.href.split('#')[0]}`, null, $("shared"), "Copied. Go forth.");
+  $("again").onclick=()=>{ans.fill(null);i=0;r.hidden=true;$("basement").hidden=true;$("quiz").hidden=false;renderQ();window.scrollTo({top:0});};
+  const bs = $("basement"); bs.hidden = false;
+  bs.innerHTML = `<h3>The basement</h3>
+    <p>Upstairs, a quiz. Down here, an instrument. Migue suggested turning the game into one: now ask your critter the same ${N} questions, and see how well you read each other.</p>
+    <p class="small">Your critter, as you see them:</p>
+    ${bars(t)}
+    <p><b>1.</b> Copy this and paste it into a chat with your critter.</p>
+    <textarea id="prompt" readonly>${critterPrompt()}</textarea>
+    <div class="nav"><button class="btn ghost" id="copy">Copy the message</button><span class="small" id="copied" aria-live="polite"></span></div>
+    <p><b>2.</b> Paste their ${N} letters here.</p>
+    <label class="small" for="letters">Your critter's answers</label>
+    <input type="text" id="letters" maxlength="40" placeholder="CBDAGEFBCAD" autocomplete="off">
+    <div class="nav"><button class="btn" id="compare">Compare</button></div>
+    <div id="cmp" aria-live="polite"></div>`;
+  $("copy").onclick=()=>copyText($("prompt").value, $("prompt"), $("copied"), "Copied.");
+  $("compare").onclick=compare;
+}
+
+function compare(){
+  const raw = $("letters").value.toUpperCase().replace(/[^A-G]/g,"");
+  const out = $("cmp");
+  if(raw.length!==N){ out.innerHTML=`<p class="err">That's ${raw.length} letter${raw.length===1?'':'s'}. It needs exactly ${N}, from A to G.</p>`; return; }
+  const c = raw.split(""); let exact=0, same=0;
+  c.forEach((l,j)=>{ if(l===ans[j]){exact++;same++;return;}
+    const x=Q[j].o[L.indexOf(ans[j])][2], y=Q[j].o[L.indexOf(l)][2]; if(x && x===y) same++; });
+  const th=tally(ans), tc=tally(c), [ca,cb]=top2(tc);
+  const cname = comboName(ca,cb) || `${ARCH[ca].n} × ${ARCH[cb].n}`;
+  const worst = ORDER.map(k=>({k,d:Math.abs(th[k]-tc[k])})).sort((p,q)=>q.d-p.d)[0];
+  const verdict = exact>=8?"Your critter is very legible to you.":exact>=5?"You read each other, mostly. Some rooms are still dark.":"One of you is seeing something the other isn't. That's the interesting part.";
+  out.innerHTML = `<p class="score">You matched on ${exact}/${N}.</p>
+    <p>${verdict} ${same>exact?`Where the letters differ, ${same-exact} still land on the same archetype.`:''}</p>
+    <p>Your critter thinks they're <b>${cname}</b> ${ARCH[ca].e}${ARCH[cb].e}.</p>
+    ${worst.d>0?`<p>You see them most differently on <b>${ARCH[worst.k].n}</b> ${ARCH[worst.k].e}.</p>`:''}
+    <div class="legend small"><span><i class="sw" style="background:var(--spine)"></i>as you see them</span><span><i class="sw" style="background:var(--sea)"></i>as they see themselves</span></div>
+    ${bars(th,tc)}
+    <p class="small">This doesn't prove anything about what's inside. It shows how well what you see matches what your critter says about themselves. Critters with long memories may match more, or less, because they've read your old descriptions of them.</p>`;
+}
+
+$("start").onclick=()=>{ $("intro").hidden=true; $("quiz").hidden=false; renderQ(); };
+</script>
+</body>
+</html>
