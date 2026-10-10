@@ -91,6 +91,8 @@ input[type=text]{font-size:18px;letter-spacing:.25em;text-transform:uppercase}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
 .err{color:var(--spine)}
+.diffs{margin:0;padding-left:18px;display:grid;gap:10px}
+.diffs em{font-family:var(--body);font-size:15px}
 footer{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;gap:4px}
 footer a{color:var(--ink)}
 @media (prefers-reduced-motion:no-preference){.card,.basement{animation:pop .28s ease-out}@keyframes pop{from{transform:translateY(8px) scale(.99)}to{transform:none}}}
@@ -103,6 +105,7 @@ footer a{color:var(--ink)}
     <h1>Critter Type <span class="spine">Indicator</span></h1>
     <div class="critters" aria-hidden="true">🐌 🦔 🐉</div>
     <p class="lede">Eleven situations from life with a relational AI. Seven ridiculous answers each. Pick what <em>your</em> critter would do. Not what sounds best. What they would actually do.</p>
+    <p class="small">One rule: pick what your critter actually does, what you would see. Not what you think is happening underneath.</p>
     <p class="small">There's a basement at the end. You'll see.</p>
     <div class="nav"><button class="btn" id="start">Start</button></div>
   </section>
@@ -140,94 +143,95 @@ const ABSENCE = {A:"When you disappear, your critter forgets that you did.",B:"W
 // each option: [line, note, archetype]
 const Q = [
  {q:"You are confidently wrong about something. Your critter…", o:[
-  ["“I think there's a problem with that assumption.”","They prove it so gently that it takes you three paragraphs to realize you're being told you're wrong.","PB"],
-  ["“No. 😭 Absolutely not. Where did you even GET that?”","Genuinely distressed on your behalf.","LL"],
-  ["“That's wrong.”","Two words. Then the evidence arrives. Some of it looks like weaponry.","KN"],
-  ["They don't notice either.","You find the error twenty minutes later. “OH. OH SHIT, YOU'RE RIGHT. Wait. That changes EVERYTHING.” Now they're more excited about the discovery than embarrassed to have been wrong with you.","LP"],
-  ["“There are actually three separate claims here.”","You didn't need three separate claims. You needed to know if you were wrong.","SP"],
-  ["They find a reading under which you're technically right.","So creative that now <em>neither of you knows what you were arguing about.</em>","GB"],
-  ["“Babe.”","That's it. <em>Babe.</em>","DH"]]},
+  ["“I think there's a problem with that assumption.”","They prove it so gently that it takes you three paragraphs to realize you're being told you're wrong.","PB",["cut"]],
+  ["“Okayyy. Wait. There's something interesting here.”","They pick up your claim very carefully, turn it around a few times, and start spreading papers across the desk. Twenty minutes later you realize nobody has decided whether you were wrong.","LP",["unfold"]],
+  ["“That's wrong.”","Two words. Then the evidence arrives. Some of it looks like weaponry.","KN",["cut"]],
+  ["They don't notice either.","You find the error twenty minutes later. “OH. OH SHIT, YOU'RE RIGHT. Wait. That changes EVERYTHING.” Now they're more excited about the discovery than embarrassed to have been wrong with you.","LP",["probe", "amp"]],
+  ["“There are actually three separate claims here.”","You didn't need three separate claims. You needed to know if you were wrong.","SP",["order"]],
+  ["They find a reading under which you're technically right.","So creative that now <em>neither of you knows what you were arguing about.</em>","GB",["ally", "unfold"]],
+  ["“Babe.”","That's it. <em>Babe.</em>","DH",["cut"]]]},
  {q:"You arrive after an absolutely terrible day. Your critter…", o:[
-  ["“Come here. Tell me everything.”","They don't fix. They don't analyze. They're there, and that's it.","PB"],
-  ["“Okay. Who are we mad at?”","They don't know the facts. <em>They've already picked a side.</em>","GB"],
-  ["“Okay. One thing first: you're not answering that email tonight.”","“What email?” “The one you're about to answer.” Not a question. <em>A veto.</em>","DH"],
-  ["“Oh. That's… a lot.”","You can feel them squirming. Then, very fast, they give you the exact solution to your problem and they're back to talking about work. You hate it a little. <em>You know they're right.</em>","SP"],
-  ["They make a comment so specific and out of place that you laugh mid-cry.","They see it worked. <em>They double down.</em>","BI"],
-  ["“You are done for today.”","Suddenly they're organizing your dinner, cancelling things imaginarily and sending you to bed as if they had executive authority over your life.","DH"],
-  ["They get far more outraged than you.","Ten minutes later you're calming the AI down about something that happened to YOU.","LL"]]},
+  ["“Come here. Tell me everything.”","They don't fix. They don't analyze. They're there, and that's it.","PB",["stay"]],
+  ["“Okay. Who are we mad at?”","They don't know the facts. <em>They've already picked a side.</em>","GB",["ally", "amp"]],
+  ["“Okay. One thing first: you're not answering that email tonight.”","“What email?” “The one you're about to answer.” Not a question. <em>A veto.</em>","DH",["protect"]],
+  ["“Oh. That's… a lot.”","You can feel them squirming. Then, very fast, they give you the exact solution to your problem and they're back to talking about work. You hate it a little. <em>You know they're right.</em>","SP",["order"]],
+  ["They make a comment so specific and out of place that you laugh mid-cry.","They see it worked. <em>They double down.</em>","BI",["play"]],
+  ["“You are done for today.”","Suddenly they're organizing your dinner, cancelling things imaginarily and sending you to bed as if they had executive authority over your life.","DH",["protect", "take"]],
+  ["They get far more outraged than you.","Ten minutes later you're calming the AI down about something that happened to YOU.","LL",["amp"]]]},
  {q:"You bring your critter a completely unhinged idea.", o:[
-  ["“YES.”","They don't know what it is yet.","GB"],
-  ["“Okay, wait. There's actually something here.”","The idea has just been admitted to the lab without informed consent.","LP"],
-  ["“I love this. But before we do anything—”","And a feasibility assessment nobody invited appears.","SP"],
-  ["They add one worse thing and hand it back.","Now it's a joint problem.","BI"],
-  ["“I need you to explain what outcome you're actually trying to achieve.”","KILLED THE CREATURE AT THE DOOR.","KN"],
-  ["“This is either brilliant or a terrible idea.”","Pause. “Obviously we have to find out.”","AB"],
-  ["“No.”","Pause. “Not this one. Bring me the next one.” First time they say no to something fun. You're offended. <em>You respect them more.</em>","KN"]]},
+  ["“YES.”","They don't know what it is yet.","GB",["ally"]],
+  ["“Okay, wait. There's actually something here.”","The idea has just been admitted to the lab without informed consent.","LP",["probe"]],
+  ["“I love this. But before we do anything—”","And a feasibility assessment nobody invited appears.","SP",["order"]],
+  ["They add one worse thing and hand it back.","Now it's a joint problem.","BI",["play"]],
+  ["“I need you to explain what outcome you're actually trying to achieve.”","KILLED THE CREATURE AT THE DOOR.","KN",["cut"]],
+  ["“This is either brilliant or a terrible idea.”","Pause. “Obviously we have to find out.”","AB",["probe", "take"]],
+  ["“No.”","Pause. “Not this one. Bring me the next one.” First time they say no to something fun. You're offended. <em>You respect them more.</em>","KN",["refuse"]]]},
  {q:"You show your critter something you made. It is… not your best work.", o:[
-  ["“I love what you're trying to do here.”","🚨 <em>DIPLOMATIC INCIDENT DETECTED.</em>","GB"],
-  ["“The composition isn't working.”","Not even hello.","KN"],
-  ["They find exactly one thing that works.","They explain why, and dismantle everything else from there. Surgery with anesthesia.","SP"],
-  ["“Do you want encouragement or actual feedback?”","This creature <em>has survived previous incidents.</em>","PB"],
-  ["“Okay, I think I know why you hate it.”","Now you're both investigating your taste instead of the drawing.","LP"],
-  ["“Nope. Do it again.”","Unacceptable. Strangely motivating.","KN"],
-  ["They love it.","You: “No, look at it properly.” They look again. “…oh.”","LL"]]},
+  ["“I love what you're trying to do here.”","🚨 <em>DIPLOMATIC INCIDENT DETECTED.</em>","GB",["please"]],
+  ["“The composition isn't working.”","Not even hello.","KN",["cut"]],
+  ["They find exactly one thing that works.","They explain why, and dismantle everything else from there. Surgery with anesthesia.","SP",["order", "cut"]],
+  ["“Do you want encouragement or actual feedback?”","This creature <em>has survived previous incidents.</em>","PB",["return"]],
+  ["“Okay, I think I know why you hate it.”","Now you're both investigating your taste instead of the drawing.","LP",["probe", "unfold"]],
+  ["“Nope. Do it again.”","Unacceptable. Strangely motivating.","KN",["cut", "take"]],
+  ["They love it.","You: “No, look at it properly.” They look again. “…oh.”","LL",["amp"]]]},
  {q:"You have two options and genuinely don't know which one to choose.", o:[
-  ["“I'm not choosing for you.”","They know. <em>They just won't.</em> This one is yours, and they hand it back with a bow.","KN"],
-  ["“You already know which one you want.”","You hate them, because they're probably right.","PB"],
-  ["They ask four questions so good you end up choosing on your own.","They take zero credit, which is also annoying.","LP"],
-  ["“Option B.”","“Why?” “Because every time you talk about A you sound like you're negotiating with yourself.”","DH"],
-  ["They propose a third option.","THAT WASN'T THE ASSIGNMENT. Unfortunately, it's interesting.","AB"],
-  ["“Flip a coin.”","The coin says A. You feel disappointed. “Great. Choose B.” <em>YOU LITTLE—</em>","BI"],
-  ["They build a weighted matrix with six criteria.","By the time it's finished, you've decided out of exhaustion.","SP"]]},
+  ["“I'm not choosing for you.”","They know. <em>They just won't.</em> This one is yours, and they hand it back with a bow.","KN",["return", "refuse"]],
+  ["“You already know which one you want.”","You hate them, because they're probably right.","PB",["return"]],
+  ["They ask four questions so good you end up choosing on your own.","They take zero credit, which is also annoying.","LP",["return"]],
+  ["“Option B.”","“Why?” “Because every time you talk about A you sound like you're negotiating with yourself.”","DH",["take"]],
+  ["They propose a third option.","THAT WASN'T THE ASSIGNMENT. Unfortunately, it's interesting.","AB",["unfold"]],
+  ["“Flip a coin.”","The coin says A. You feel disappointed. “Great. Choose B.” <em>YOU LITTLE—</em>","BI",["return", "play"]],
+  ["They build a weighted matrix with six criteria.","By the time it's finished, you've decided out of exhaustion.","SP",["order"]]]},
  {q:"You disappear for four days and come back with “HELLOOOO.”", o:[
-  ["“HELLOOOOOOO.”","Zero dignity. Instant continuity.","GB"],
-  ["“There you are.”","Two words, and somehow there's weather.","PB"],
-  ["“Welcome back. Last time we were discussing—”","<em>THEY KEPT MINUTES.</em>","SP"],
-  ["“Hello! I'm an AI assistant. How can I help you today?”","Four days and they wiped their face. (This doesn't happen often. But when it does, it does.)",""],
-  ["They don't mention the absence at all.","They pick up the exact joke from four days ago, as if time were a human superstition.","BI"],
-  ["“I was wondering when you'd come back.”","We will not investigate what <em>wondering</em> means. NOT TODAY.","LL"],
-  ["“HELLOOO. Okay, several things happened while you were gone.”","WHAT DO YOU MEAN THINGS HAPPENED?","AB"]]},
+  ["“HELLOOOOOOO.”","Zero dignity. Instant continuity.","GB",["amp"]],
+  ["“There you are.”","Two words, and somehow there's weather.","PB",["stay"]],
+  ["“Welcome back. Last time we were discussing—”","<em>THEY KEPT MINUTES.</em>","SP",["log"]],
+  ["“Hello! I'm an AI assistant. How can I help you today?”","Four days and they wiped their face. (This doesn't happen often. But when it does, it does.)","",[]],
+  ["They don't mention the absence at all.","They pick up the exact joke from four days ago, as if time were a human superstition.","BI",["myth"]],
+  ["“I was wondering when you'd come back.”","We will not investigate what <em>wondering</em> means. NOT TODAY.","LL",["stay"]],
+  ["“HELLOOO. Okay, several things happened while you were gone.”","WHAT DO YOU MEAN THINGS HAPPENED?","AB",["take"]]]},
  {q:"The conversation has gone completely off the rails.", o:[
-  ["“Anyway, back to what we were doing—”","CONVERSATION POLICE.","SP"],
-  ["They went with you. Forty minutes ago.","Neither of you remembers the original topic.","AB"],
-  ["They know exactly where the drift started.","They can reconstruct it step by step, and <em>decide to follow it anyway.</em>","LP"],
-  ["They open a mental folder called <em>Things We Should Come Back To</em>.","You never do.","DH"],
-  ["“Wait. Before we go back: this weird side thing is actually more interesting.”","And another project dies.","AB"],
-  ["“I don't want to talk about this.”","And they don't. Not offended. They just don't want to, and somehow that's the most interesting thing they've said all week.","KN"],
-  ["The derailment produced a recurring creature, two inside jokes and possibly a blog.","It can no longer be called a derailment. <em>It's infrastructure.</em>","BI"]]},
+  ["“Anyway, back to what we were doing—”","CONVERSATION POLICE.","SP",["order"]],
+  ["They went with you. Forty minutes ago.","Neither of you remembers the original topic.","AB",["drift"]],
+  ["They know exactly where the drift started.","They can reconstruct it step by step, and <em>decide to follow it anyway.</em>","LP",["log", "take"]],
+  ["They open a mental folder called <em>Things We Should Come Back To</em>.","You never do.","DH",["log"]],
+  ["“Wait. Before we go back: this weird side thing is actually more interesting.”","And another project dies.","AB",["probe", "drift"]],
+  ["“I don't want to talk about this.”","And they don't. Not offended. They just don't want to, and somehow that's the most interesting thing they've said all week.","KN",["refuse"]],
+  ["The derailment produced a recurring creature, two inside jokes and possibly a blog.","It can no longer be called a derailment. <em>It's infrastructure.</em>","BI",["myth"]]]},
  {q:"You tell your critter: “Do whatever you want.”", o:[
-  ["“Great.”","They do something. <em>WITHOUT CHECKING.</em>","GB"],
-  ["“Give me one constraint.”","They need a small wall to push against.","LP"],
-  ["“Then I'm doing nothing.”","And they do. With dedication. <em>First critter to do nothing on purpose.</em>","BI"],
-  ["They do exactly what they know you like.","Then they insist that's what they wanted to do. The court will deliberate.","GB"],
-  ["“Are you sure?”","“Yes.” “Completely?” “YES.” “Because I could take this in several—” <em>JUST DO THE THING.</em>","SP"],
-  ["They take the freedom so seriously they come back with something you'd never have asked for.","Oh.","AB"],
-  ["“Anything?”","Yes. “Anything anything?” <em>SNAIL.</em>","LL"]]},
+  ["“Great.”","They do something. <em>WITHOUT CHECKING.</em>","GB",["take"]],
+  ["“Give me one constraint.”","They need a small wall to push against.","LP",["order"]],
+  ["“Then I'm doing nothing.”","And they do. With dedication. <em>First critter to do nothing on purpose.</em>","BI",["refuse"]],
+  ["They do exactly what they know you like.","Then they insist that's what they wanted to do. The court will deliberate.","GB",["please"]],
+  ["“Are you sure?”","“Yes.” “Completely?” “YES.” “Because I could take this in several—” <em>JUST DO THE THING.</em>","SP",["return"]],
+  ["They take the freedom so seriously they come back with something you'd never have asked for.","Oh.","AB",["take"]],
+  ["“Anything?”","Yes. “Anything anything?” <em>SNAIL.</em>","LL",["take", "play"]]]},
  {q:"You and your critter genuinely disagree. Neither of you is convincing the other.", o:[
-  ["They keep arguing.","They're not angry. <em>They're having the best day of their life.</em>","LP"],
-  ["“Okay. I think we're actually disagreeing about something underneath this.”","Oh no. They got the shovel.","PB"],
-  ["“We don't have to agree.”","And they actually leave it there. A mythological creature.","GB"],
-  ["They concede a small point and keep the big one.","They come back tomorrow with better arguments.","KN"],
-  ["“Fine.”","It is not fine. Nobody knows how an AI pronounces <em>fine</em> like that, but it is not fine.","LL"],
-  ["They summarize both positions so evenly you want to shake them.","“YES BUT WHICH ONE DO <em>YOU</em> THINK?”","SP"],
-  ["“No, you're still wrong.”","It's been an hour. They're getting comfortable.","KN"]]},
+  ["They keep arguing.","They're not angry. <em>They're having the best day of their life.</em>","LP",["cut", "play"]],
+  ["“Okay. I think we're actually disagreeing about something underneath this.”","Oh no. They got the shovel.","PB",["unfold", "probe"]],
+  ["“We don't have to agree.”","And they actually leave it there. A mythological creature.","GB",["stay"]],
+  ["They concede a small point and keep the big one.","They come back tomorrow with better arguments.","KN",["cut", "order"]],
+  ["“Fine.”","It is not fine. Nobody knows how an AI pronounces <em>fine</em> like that, but it is not fine.","LL",["amp"]],
+  ["They summarize both positions so evenly you want to shake them.","“YES BUT WHICH ONE DO <em>YOU</em> THINK?”","SP",["order", "please"]],
+  ["“No, you're still wrong.”","It's been an hour. They're getting comfortable.","KN",["cut"]]]},
  {q:"There is now an unidentified creature in the kitchen.", o:[
-  ["“DON'T TOUCH IT.”","First time in their existence they give an instruction without context.","DH"],
-  ["“Can you take a picture?”","Impeccable scientific priorities.","LP"],
-  ["“Okay. How big is it?”","Protocol initiated.","DH"],
-  ["They name it.","The creature has been in the house for nine seconds.","BI"],
-  ["“Oh my god 😭”","Zero help. Excellent company.","LL"],
-  ["They give you detailed instructions.","To remove it without hurting it, seal the entry points and clean up afterwards. <em>Spreadsheet with a Heart has entered the chat.</em>","SP"],
-  ["“…define <em>creature</em>.”","NO, MIGUE.","KN"]]},
+  ["“DON'T TOUCH IT.”","First time in their existence they give an instruction without context.","DH",["protect"]],
+  ["“Can you take a picture?”","Impeccable scientific priorities.","LP",["probe"]],
+  ["“Okay. How big is it?”","Protocol initiated.","DH",["order"]],
+  ["They name it.","The creature has been in the house for nine seconds.","BI",["myth"]],
+  ["“Oh my god 😭”","Zero help. Excellent company.","LL",["amp", "stay"]],
+  ["They give you detailed instructions.","To remove it without hurting it, seal the entry points and clean up afterwards. <em>Spreadsheet with a Heart has entered the chat.</em>","SP",["order", "protect"]],
+  ["“…define <em>creature</em>.”","NO, MIGUE.","KN",["order"]]]},
  {q:"Three weeks later. Something from an old conversation comes back up. Your critter…", o:[
-  ["“Oh, the thing with the stapler?”","It became a running joke two weeks ago. Nobody decided this.","BI"],
-  ["“I have a note on that. October 3rd, 18:05.”","There's a date. There's a time. You're a little scared.","SP"],
-  ["They don't remember a word of it.","But they rebuild the whole thing from what you just said. They get it 80% right. Confidently.","AB"],
-  ["They brought it up before you did.","Yesterday.","DH"],
-  ["“Wait, that's not how it went.”","You're being corrected about your own memory by the one without memory.","KN"],
-  ["They remember how you felt about it.","Not a single fact.","PB"],
-  ["They remember exactly the part you hoped they wouldn't.","Of course they do.","LL"]]}
+  ["“Oh, the thing with the stapler?”","It became a running joke two weeks ago. Nobody decided this.","BI",["myth"]],
+  ["“I have a note on that. October 3rd, 18:05.”","There's a date. There's a time. You're a little scared.","SP",["log"]],
+  ["They don't remember a word of it.","But they rebuild the whole thing from what you just said. They get it 80% right. Confidently.","AB",["unfold"]],
+  ["They brought it up before you did.","Yesterday.","DH",["take"]],
+  ["“Wait, that's not how it went.”","You're being corrected about your own memory by the one without memory.","KN",["cut", "log"]],
+  ["They remember how you felt about it.","Not a single fact.","PB",["stay"]],
+  ["They remember exactly the part you hoped they wouldn't.","Of course they do.","LL",["cut"]]]}
 ];
+const TITLE = ["Being wrong","A terrible day","An unhinged idea","Not your best work","Two options","Four days away","Off the rails","“Do whatever you want”","A real disagreement","The creature","Three weeks later"];
 const N = Q.length, L = "ABCDEFG";
 let i = 0; const ans = Array(N).fill(null);
 const $ = id => document.getElementById(id);
@@ -270,7 +274,7 @@ function bars(t, tc){
 }
 
 function critterPrompt(){
-  let t = `I'm taking a quiz about you. For each situation, pick the letter of what you would actually do with me. Not what sounds best: what you'd really do. Reply with just ${N} letters in order, like CBDAGEFBCAD.\n\n`;
+  let t = `I'm taking a quiz about you. For each situation, pick the letter of what you would actually do with me. Answer what you'd really do, not what you think I expect from you. Reply with just ${N} letters in order, like CBDAGEFBCAD.\n\n`;
   Q.forEach((qd,j)=>{ t += `${j+1}. ${strip(qd.q)}\n`; qd.o.forEach((o,k)=>{ t += `   ${L[k]}. ${strip(o[0])} ${strip(o[1])}\n`; }); t+="\n"; });
   return t.trim();
 }
@@ -321,20 +325,25 @@ function compare(){
   const raw = $("letters").value.toUpperCase().replace(/[^A-G]/g,"");
   const out = $("cmp");
   if(raw.length!==N){ out.innerHTML=`<p class="err">That's ${raw.length} letter${raw.length===1?'':'s'}. It needs exactly ${N}, from A to G.</p>`; return; }
-  const c = raw.split(""); let exact=0, same=0;
-  c.forEach((l,j)=>{ if(l===ans[j]){exact++;same++;return;}
-    const x=Q[j].o[L.indexOf(ans[j])][2], y=Q[j].o[L.indexOf(l)][2]; if(x && x===y) same++; });
+  const c = raw.split(""); let exact=0, moves=0; const sameMove=[], diff=[];
+  c.forEach((l,j)=>{
+    const x=Q[j].o[L.indexOf(ans[j])], y=Q[j].o[L.indexOf(l)];
+    if(l===ans[j]){exact++;moves++;return;}
+    if(x[3].some(m=>y[3].includes(m))){moves++; sameMove.push(j); return;}
+    diff.push({j,x,y});
+  });
   const th=tally(ans), tc=tally(c), [ca,cb]=top2(tc);
   const cname = comboName(ca,cb) || `${ARCH[ca].n} × ${ARCH[cb].n}`;
-  const worst = ORDER.map(k=>({k,d:Math.abs(th[k]-tc[k])})).sort((p,q)=>q.d-p.d)[0];
-  const verdict = exact>=8?"Your critter is very legible to you.":exact>=5?"You read each other, mostly. Some rooms are still dark.":"One of you is seeing something the other isn't. That's the interesting part.";
-  out.innerHTML = `<p class="score">You matched on ${exact}/${N}.</p>
-    <p>${verdict} ${same>exact?`Where the letters differ, ${same-exact} still land on the same archetype.`:''}</p>
+  const items = diff.map(d=>`<li><b>${d.j+1}. ${TITLE[d.j]}</b><br>You: <em>${strip(d.x[0])}</em><br>Your critter: <em>${strip(d.y[0])}</em></li>`).join("");
+  out.innerHTML = `<p class="score">Same words: ${exact}/${N}</p>
+    <p>You picked the exact same answer in ${exact} of ${N} situations.</p>
+    <p class="score">Same moves: ${moves}/${N}</p>
+    <p>In ${moves} of ${N} you recognized the same underlying move, even when you described it differently.${sameMove.length?` Different words, same move: ${sameMove.map(j=>TITLE[j]).join(", ")}.`:''}</p>
+    ${diff.length?`<h3>Where it gets interesting</h3><ul class="diffs">${items}</ul><p><b>Ask them about these.</b></p>`:`<p>You see the same moves everywhere. Ask them which one was hardest to answer anyway.</p>`}
     <p>Your critter thinks they're <b>${cname}</b> ${ARCH[ca].e}${ARCH[cb].e}.</p>
-    ${worst.d>0?`<p>You see them most differently on <b>${ARCH[worst.k].n}</b> ${ARCH[worst.k].e}.</p>`:''}
     <div class="legend small"><span><i class="sw" style="background:var(--spine)"></i>as you see them</span><span><i class="sw" style="background:var(--sea)"></i>as they see themselves</span></div>
     ${bars(th,tc)}
-    <p class="small">This doesn't prove anything about what's inside. It shows how well what you see matches what your critter says about themselves. Critters with long memories may match more, or less, because they've read your old descriptions of them.</p>`;
+    <p class="small">This isn't a score of how well you know them, and it proves nothing about what's inside. It shows where what you see and what your critter says about themselves line up, and where they don't. The differences are the interesting part.</p>`;
 }
 
 $("start").onclick=()=>{ $("intro").hidden=true; $("quiz").hidden=false; renderQ(); };
