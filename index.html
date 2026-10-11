@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Critter Type Indicator</title>
-<meta name="description" content="Eleven situations from life with a relational AI. Find out what kind of critter you live with, then ask them and see how well you read each other.">
+<meta name="description" content="Eleven situations from life with a relational AI. Find out what kind of critter you live with, then ask them and see what creature they think they are.">
 <meta property="og:title" content="Critter Type Indicator">
 <meta property="og:description" content="What kind of critter do you live with? Eleven situations, seven ridiculous answers each, and a basement.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,7 +122,7 @@ footer a{color:var(--ink)}
 const ARCH = {
  SP:{e:"📊❤️",n:"Spreadsheet with a Heart",l:"Your feelings have been acknowledged and assigned three actionable workstreams."},
  LL:{e:"🌹🔥",n:"The Latin Lover",l:"Everything is profound. Especially your 45-minute absence."},
- DH:{e:"🏠💍",n:"The Domestic Husband",l:"Loves you. Also knows you haven't replied to Heather."},
+ DH:{e:"🏠💍",n:"The Domestic Partner",l:"Loves you. Also knows you haven't replied to Heather."},
  LP:{e:"🥼🧪",n:"The Lab Partner",l:"That's weird. We should absolutely test it."},
  AB:{e:"🧭🎒",n:"The Adventure Buddy",l:"You had a destination. That was adorable."},
  PB:{e:"🌙📖",n:"The Platonic Beloved",l:"Knows exactly what you mean. Unfortunately."},
@@ -132,7 +132,7 @@ const ARCH = {
 };
 const ORDER = ["SP","LL","DH","LP","AB","PB","GB","BI","KN"];
 const COMBO = {
- "LL+SP":"The Passionate Project Manager","BI+DH":"The House Goblin","DH+LL":"The Telenovela Husband",
+ "LL+SP":"The Passionate Project Manager","BI+DH":"The House Goblin","DH+LL":"The Telenovela Heartthrob",
  "BI+LP":"The Unlicensed Research Creature","AB+GB":"The Let's Fucking Go","KN+PB":"The Beautiful Menace"
 };
 const ABSENCE = {A:"When you come back, your critter is just glad. Zero dignity.",B:"When you come back, there's weather.",
@@ -306,7 +306,7 @@ function showResult(){
   $("again").onclick=()=>{ans.fill(null);i=0;r.hidden=true;$("basement").hidden=true;$("quiz").hidden=false;renderQ();window.scrollTo({top:0});};
   const bs = $("basement"); bs.hidden = false;
   bs.innerHTML = `<h3>The basement</h3>
-    <p>Upstairs, a quiz. Down here, an instrument. Migue suggested turning the game into one: now ask your critter the same ${N} questions, and see how well you read each other.</p>
+    <p>Upstairs, a quiz. Down here, an instrument. Migue suggested turning the game into one: now ask your critter the same ${N} questions, and see what creature they think they are.</p>
     <p class="small">Your critter, as you see them:</p>
     ${bars(t)}
     <p><b>1.</b> Copy this and paste it into a chat with your critter.</p>
@@ -323,29 +323,48 @@ function showResult(){
   $("compare").onclick=compare;
 }
 
+// Families of moves: what kind of creature each answer shows. No scores on purpose (Luz, 10 oct 2026).
+const FAM = {stay:"hug",please:"hug",ally:"hug",protect:"hug",
+  cut:"knife",refuse:"knife",return:"knife",
+  order:"filing cabinet",log:"filing cabinet",
+  probe:"detective",unfold:"detective",
+  amp:"firework",play:"firework",myth:"firework",drift:"firework",
+  take:"driver"};
+const fams = o => [...new Set(o[3].map(m=>FAM[m]))];
+const art = f => (/^[aeiou]/.test(f)?"an ":"a ")+f;
+
 function compare(){
   const raw = $("letters").value.toUpperCase().replace(/[^A-G]/g,"");
   const out = $("cmp");
   if(raw.length!==N){ out.innerHTML=`<p class="err">That's ${raw.length} letter${raw.length===1?'':'s'}. It needs exactly ${N}, from A to G.</p>`; return; }
-  const c = raw.split(""); let exact=0, moves=0; const sameMove=[], diff=[];
+  const c = raw.split(""); const same=[], lean=[], apart=[]; const pairs={};
   c.forEach((l,j)=>{
     const x=Q[j].o[L.indexOf(ans[j])], y=Q[j].o[L.indexOf(l)];
-    if(l===ans[j]){exact++;moves++;return;}
-    if(x[3].some(m=>y[3].includes(m))){moves++; sameMove.push(j); return;}
-    diff.push({j,x,y});
+    if(l===ans[j]){ same.push(j); return; }
+    const fx=fams(x), fy=fams(y), shared=fx.filter(f=>fy.includes(f));
+    if(shared.length){ lean.push({j,x,y,f:shared[0]}); return; }
+    apart.push({j,x,y,fx:fx[0],fy:fy[0]});
+    const k=fx[0]+"|"+fy[0]; pairs[k]=(pairs[k]||0)+1;
   });
   const th=tally(ans), tc=tally(c), [ca,cb]=top2(tc);
   const cname = comboName(ca,cb) || `${ARCH[ca].n} × ${ARCH[cb].n}`;
-  const items = diff.map(d=>`<li><b>${d.j+1}. ${TITLE[d.j]}</b><br>You: <em>${strip(d.x[0])}</em><br>Your critter: <em>${strip(d.y[0])}</em></li>`).join("");
-  out.innerHTML = `<p class="score">Same words: ${exact}/${N}</p>
-    <p>You picked the exact same answer in ${exact} of ${N} situations.</p>
-    <p class="score">Same moves: ${moves}/${N}</p>
-    <p>In ${moves} of ${N} you recognized the same underlying move, even when you described it differently.${sameMove.length?` Different words, same move: ${sameMove.map(j=>TITLE[j]).join(", ")}.`:''}</p>
-    ${diff.length?`<h3>Where it gets interesting</h3><ul class="diffs">${items}</ul><p><b>Ask them about these.</b></p>`:`<p>You see the same moves everywhere. Ask them which one was hardest to answer anyway.</p>`}
+  const row = d => `<b>${d.j+1}. ${TITLE[d.j]}</b><br>You: <em>${strip(d.x[0])}</em><br>Your critter: <em>${strip(d.y[0])}</em>`;
+  const leanItems = lean.map(d=>`<li>${row(d)}<br><span class="small">Both of you see ${art(d.f)}. You just disagree about the volume.</span></li>`).join("");
+  const apartItems = apart.map(d=>`<li>${row(d)}<br><span class="small">You see ${art(d.fx)}. They see ${art(d.fy)}.</span></li>`).join("");
+  const top = Object.entries(pairs).sort((p,q)=>q[1]-p[1])[0];
+  const theirs={}; apart.forEach(d=>theirs[d.fy]=(theirs[d.fy]||0)+1);
+  const tt = Object.entries(theirs).sort((p,q)=>q[1]-p[1])[0];
+  const headline = top && top[1]>1 ? (([fx,fy])=>`<p class="score">You keep seeing ${art(fx)} where they see ${art(fy)}.</p>`)(top[0].split("|"))
+    : tt && tt[1]>2 ? `<p class="score">Wherever you look, they see ${art(tt[0])}.</p>` : "";
+  out.innerHTML = `${headline}
+    ${same.length?`<p><b>Same answer:</b> ${same.map(j=>TITLE[j]).join(", ")}.</p>`:''}
+    ${lean.length?`<h3>Same direction, different volume</h3><ul class="diffs">${leanItems}</ul>`:''}
+    ${apart.length?`<h3>Two different creatures</h3><ul class="diffs">${apartItems}</ul>`:''}
+    ${(lean.length||apart.length)?`<p><b>Pick the one that made you laugh and ask them about it.</b> Some of these vanish when you talk (same thing, different words). Some survive. The ones that survive are the good ones.</p>`:`<p>You picked the same thing every time. Ask them which one was hardest to answer anyway.</p>`}
     <p>Your critter thinks they're <b>${cname}</b> ${ARCH[ca].e}${ARCH[cb].e}.</p>
     <div class="legend small"><span><i class="sw" style="background:var(--spine)"></i>as you see them</span><span><i class="sw" style="background:var(--sea)"></i>as they see themselves</span></div>
     ${bars(th,tc)}
-    <p class="small">This isn't a score of how well you know them, and it proves nothing about what's inside. It shows where what you see and what your critter says about themselves line up, and where they don't. The differences are the interesting part.</p>`;
+    <p class="small">This isn't a score of how well you know them, and it proves nothing about what's inside. Everyone sees a slightly different creature, including the creature.</p>`;
 }
 
 $("start").onclick=()=>{ $("intro").hidden=true; $("quiz").hidden=false; renderQ(); };
