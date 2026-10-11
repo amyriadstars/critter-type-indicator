@@ -349,8 +349,8 @@ function compare(){
   const th=tally(ans), tc=tally(c), [ca,cb]=top2(tc);
   const cname = comboName(ca,cb) || `${ARCH[ca].n} × ${ARCH[cb].n}`;
   const row = d => `<b>${d.j+1}. ${TITLE[d.j]}</b><br>You: <em>${strip(d.x[0])}</em><br>Your critter: <em>${strip(d.y[0])}</em>`;
-  const leanItems = lean.map(d=>`<li>${row(d)}<br><span class="small">Both of you see ${art(d.f)}. You just disagree about the volume.</span></li>`).join("");
-  const apartItems = apart.map(d=>`<li>${row(d)}<br><span class="small">You see ${art(d.fx)}. They see ${art(d.fy)}.</span></li>`).join("");
+  const leanItems = lean.map(d=>`<li>${row(d)}<br><span class="small">Here, you both see ${art(d.f)}. You just disagree about the volume.</span></li>`).join("");
+  const apartItems = apart.map(d=>`<li>${row(d)}<br><span class="small">Here, you see ${art(d.fx)}. They see ${art(d.fy)}.</span></li>`).join("");
   const top = Object.entries(pairs).sort((p,q)=>q[1]-p[1])[0];
   const theirs={}; apart.forEach(d=>theirs[d.fy]=(theirs[d.fy]||0)+1);
   const tt = Object.entries(theirs).sort((p,q)=>q[1]-p[1])[0];
@@ -359,12 +359,12 @@ function compare(){
   out.innerHTML = `${headline}
     ${same.length?`<p><b>Same answer:</b> ${same.map(j=>TITLE[j]).join(", ")}.</p>`:''}
     ${lean.length?`<h3>Same direction, different volume</h3><ul class="diffs">${leanItems}</ul>`:''}
-    ${apart.length?`<h3>Two different creatures</h3><ul class="diffs">${apartItems}</ul>`:''}
+    ${apart.length?`<h3>Different readings</h3><ul class="diffs">${apartItems}</ul>`:''}
     ${(lean.length||apart.length)?`<p><b>Pick the one that made you laugh and ask them about it.</b> Some of these vanish when you talk (same thing, different words). Some survive. The ones that survive are the good ones.</p>`:`<p>You picked the same thing every time. Ask them which one was hardest to answer anyway.</p>`}
     <p>Your critter thinks they're <b>${cname}</b> ${ARCH[ca].e}${ARCH[cb].e}.</p>
     <div class="legend small"><span><i class="sw" style="background:var(--spine)"></i>as you see them</span><span><i class="sw" style="background:var(--sea)"></i>as they see themselves</span></div>
     ${bars(th,tc)}
-    <p class="small">This isn't a score of how well you know them, and it proves nothing about what's inside. Everyone sees a slightly different creature, including the creature.</p>`;
+    <p class="small">Hug, knife, filing cabinet, detective, firework, driver: those aren't types, they're what an answer does in that one moment. This isn't a score of how well you know them, and it proves nothing about what's inside. Everyone sees a slightly different creature, including the creature.</p>`;
 }
 
 $("start").onclick=()=>{ $("intro").hidden=true; $("quiz").hidden=false; renderQ(); };
